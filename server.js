@@ -3,23 +3,53 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import jwt from "jsonwebtoken";
 import bodyParser from "body-parser";
-const bcrypt = require('bcrypt');
+const bcrypt = require("bcrypt");
 const app = express();
 const PORT = 5000;
 const JWT_SECRET = "quocnhucheck"; // Secret key for JWT
-
+const allowedOrigins = [
+  "https://quocnhu95pf.tech",
+  "http://quocnhu95pf.tech"
+];
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g., mobile apps, Postman)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(cookieParser());
 
 // Dummy user data with roles
 const users = [
-  { id: 1, username: "admin", password: "$2y$10$wBuO1A8XJXn2vQcgZ2hLqeGFapxyugiqVZXiTJmH.4MO0OSyeKKYy", role: "admin" },
-  { id: 2, username: "editor", password: "$2y$10$AB90Itu06WFqcswLLhJJEuA7PE.TQCMtG9vSSDwNPLFpKk5z.ffeG", role: "editor" },
-  { id: 3, username: "viewer", password: "$2y$10$AB90Itu06WFqcswLLhJJEuA7PE.TQCMtG9vSSDwNPLFpKk5z.ffeG", role: "viewer" },
+  {
+    id: 1,
+    username: "admin",
+    password: "$2y$10$wBuO1A8XJXn2vQcgZ2hLqeGFapxyugiqVZXiTJmH.4MO0OSyeKKYy",
+    role: "admin",
+  },
+  {
+    id: 2,
+    username: "editor",
+    password: "$2y$10$AB90Itu06WFqcswLLhJJEuA7PE.TQCMtG9vSSDwNPLFpKk5z.ffeG",
+    role: "editor",
+  },
+  {
+    id: 3,
+    username: "viewer",
+    password: "$2y$10$AB90Itu06WFqcswLLhJJEuA7PE.TQCMtG9vSSDwNPLFpKk5z.ffeG",
+    role: "viewer",
+  },
   { id: 4, username: "user4", password: "75803", role: "admin" },
   { id: 5, username: "user5", password: "30384", role: "viewer" },
   { id: 6, username: "user6", password: "40678", role: "viewer" },
@@ -104,23 +134,23 @@ app.post("/login", async (req, res) => {
   try {
     const { username, password } = req.body;
     // console.log("check--<>", req.body);
-    const user = users.find(
-      (u) => u.username === username
-    ); //
+    const user = users.find((u) => u.username === username); //
     // Hash the password from the frontend (to simulate hashing as per your request)
-    const hashedPasswordFromFrontend = await bcrypt.hash(password, 10);  // Hashing frontend password
+    const hashedPasswordFromFrontend = await bcrypt.hash(password, 10); // Hashing frontend password
 
     // Compare the hashed frontend password with the stored password in the user array
-    const isPasswordValid = await bcrypt.compare(hashedPasswordFromFrontend, user.password);
+    const isPasswordValid = await bcrypt.compare(
+      hashedPasswordFromFrontend,
+      user.password
+    );
 
-    if (!isPasswordValid  && !user) {
+    if (!isPasswordValid && !user) {
       return res.status(401).json({ message: "Invalid credentials" });
     }
-    
+
     // if (!user) {
     //   return res.status(401).json({ message: "Invalid credentials" });
     // }
-    
 
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },

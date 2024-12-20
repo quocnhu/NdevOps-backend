@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devopscv-frontend-deployment # Name of the deployment
+  labels:
+    app: devopscv-frontend
+spec:
+  replicas: 2 # Number of replicas to run
+  selector:
+    matchLabels:
+      app: devopscv-frontend # Must match the labels in the Pod template
+  template:
+    metadata:
+      labels:
+        app: devopscv-frontend # Label for Pod identification
+    spec:
+      containers:
+      - name: devopscv-frontend # Name of the container
+        image: nquocnhu95it/devopscv-frontend:v1 # Replace with your actual image
+        ports:
+        - containerPort: 80 # Expose container port 80 for the app
+        # Optional: Uncomment below to add environment variables if required
+        # env:
+        # - name: ENV_VAR_NAME
+        #   value: "value" 
